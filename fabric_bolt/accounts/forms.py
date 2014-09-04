@@ -15,11 +15,14 @@ class UserChangeForm(forms.ModelForm):
     A form for updating users.
     """
     user_level = forms.ChoiceField(label='User Level')
-    is_active = forms.ChoiceField(choices=((True, 'Active'), (False, 'Disabled')), label='Status')
+    is_active = forms.ChoiceField(choices=((True, 'Active'),
+                                           (False, 'Disabled')),
+                                  label='Status')
 
     class Meta:
         model = DeployUser
-        fields = ['email', 'first_name', 'last_name', 'user_level', 'is_active', 'template']
+        fields = ['email', 'first_name', 'last_name', 'user_level',
+                  'is_active', 'template']
 
     def __init__(self, *args, **kwargs):
         # form instance and initial values
@@ -52,21 +55,23 @@ class UserChangeForm(forms.ModelForm):
 
     def save(self, commit=True):
         """
-        Save the model instance with the correct Auth Group based on the user_level question
+        Save the model instance with the correct Auth Group based on the
+        user_level question
         """
         instance = super(UserChangeForm, self).save(commit=commit)
 
-        if commit:
-            instance.save()
+        instance.save()
 
-            # Assign user to selected group
-            if self.cleaned_data.get('user_level', False):
-                instance.groups.clear()
-                instance.groups.add(Group.objects.get(id=self.cleaned_data['user_level']))
+        # Assign user to selected group
+        user_level_id = self.cleaned_data.get('user_level', False)
 
-            # Set staff status based on user group
-            instance.is_staff = instance.user_is_admin()
-            instance.save()
+        if user_level_id:
+            instance.groups.clear()
+            instance.groups.add(Group.objects.get(id=user_level_id))
+
+        # Set staff status based on user group
+        instance.is_staff = instance.user_is_admin()
+        instance.save()
 
         return instance
 
@@ -77,7 +82,8 @@ class UserCreationForm(UserChangeForm):
     repeated password.
     """
 
-    error_messages = {'duplicate_email': _("A user with that email already exists."), }
+    error_messages = {
+        'duplicate_email': _("A user with that email already exists."), }
 
     def clean_email(self):
         """
@@ -92,10 +98,12 @@ class UserCreationForm(UserChangeForm):
 
     def save(self, commit=True):
         """
-        Save the model instance with the correct Auth Group based on the user_level question
+        Save the model instance with the correct Auth Group based on the
+        user_level question
         """
         instance = super(UserCreationForm, self).save(commit=commit)
-        random_password = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+        random_password = ''.join(random.choice(
+            string.ascii_uppercase + string.digits) for x in range(32))
         instance.set_password(random_password)
         instance.save()
 
