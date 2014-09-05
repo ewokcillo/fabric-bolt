@@ -117,7 +117,8 @@ class DeploymentTable(PaginateTable):
             'stage',
             'task_name',
             'status',
-            'actions'
+            'actions',
+            'user'
         )
 
 
